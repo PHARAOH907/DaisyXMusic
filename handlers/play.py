@@ -40,7 +40,6 @@ from config import que
 from Python_ARQ import ARQ
 import json
 import wget
-inuka = 00000000
 chat_id = None
 
            
@@ -185,7 +184,6 @@ def r_ply(type_):
     & filters.group
     & ~ filters.edited
 )
-@errors
 async def settings(client, message):
     playing = None
     if message.chat.id in callsmusic.pytgcalls.active_calls:
@@ -204,6 +202,16 @@ async def settings(client, message):
 @Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave|puse|resume|playlist)$'))
 async def m_cb(b, cb):
     global que
+    user_id = cb.from_user.id
+    chat_id = cb.message.chat.id
+    #chat_member = b.get_chat_member(chat_id, user_id)
+    if (not b.get_chat_member(chat_id, user_id).status == "administrator"):    
+        b.answer_callback_query(
+             cb.id,
+             text="You cant do this babe, Contact admin",
+             show_alert=True,
+         )   
+        return
     qeue = que.get(cb.message.chat.id)
     type_ = cb.matches[0].group(1)
     chat_id = cb.message.chat.id
@@ -316,7 +324,6 @@ async def m_cb(b, cb):
             await cb.answer('Chat is not connected!', show_alert=True)
 
 @Client.on_message(command("play") & other_filters)
-@errors
 async def play(_, message: Message):
     global que
     lel = await message.reply("🔄 **Processing**")
