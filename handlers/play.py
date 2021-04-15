@@ -5,6 +5,7 @@ from pyrogram.types import Message, Voice
 
 from callsmusic import callsmusic, queues
 
+from helpers.admins import get_administrators
 from os import path
 import requests
 import aiohttp
@@ -165,8 +166,13 @@ def r_ply(type_):
         [
             [
                 InlineKeyboardButton('⏹', 'leave'),
-                InlineKeyboardButton(ico, type_),
+                InlineKeyboardButton('⏸', 'puse'),
+                InlineKeyboardButton('▶️', 'resume'),
                 InlineKeyboardButton('⏭', 'skip')
+                
+            ],
+            [
+                InlineKeyboardButton('Playlist 📖', 'playlist'),
                 
             ]
 
@@ -195,9 +201,13 @@ async def settings(client, message):
     else:
         await message.reply('No VC instances running in this chat')
 
-@Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave|puse|resume)$'))
-@authorized_users_only
+@Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave|puse|resume|playlist)$'))
 async def m_cb(b, cb):
+           
+    administrators = await get_administrators(cb.message.chat)
+    for administrator in administrators:
+        if not administrator == cb.message.from_user.id:          
+          return       
     global que
     qeue = que.get(cb.message.chat.id)
     type_ = cb.matches[0].group(1)
@@ -231,6 +241,30 @@ async def m_cb(b, cb):
             callsmusic.pytgcalls.resume_stream(chat_id)
             await cb.answer('Music Resumed!')
             await cb.message.edit(updated_stats(m_chat, qeue), reply_markup=r_ply('pause'))
+
+    elif type_ == 'playlist':
+        queue = que.get(message.chat.id)
+        if not queue:
+            
+            await message.reply_text('Player is idle')
+        temp = []
+        for t in queue:
+            temp.append(t)
+        now_playing = temp[0][0]
+        by = temp[0][1].mention(style='md')
+        msg = "**Now Playing** in {}".format(message.chat.title)
+        msg += "\n- "+ now_playing
+        msg += "\n- Req by "+by
+        temp.pop(0)
+        if temp:
+             msg += '\n\n'
+             msg += '**Queue**'
+             for song in temp:
+                 name = song[0]
+                 usr = song[1].mention(style='md')
+                 msg += f'\n- {name}'
+                 msg += f'\n- Req by {usr}\n'
+        await cb.message.edit(msg)      
                       
     elif type_ == 'resume':
         
@@ -370,8 +404,8 @@ async def play(_, message: Message):
                 [   
                     [
                       InlineKeyboardButton('⏹', callback_data='leave'),
-                      InlineKeyboardButton('⏸', callback_data= 'pause'),
-                      InlineKeyboardButton('▶️', callback_data= 'play'),
+                      InlineKeyboardButton('⏸', callback_data= 'puse'),
+                      InlineKeyboardButton('▶️', callback_data= 'resume'),
                       InlineKeyboardButton('⏭', callback_data='skip')
                 
                     ],                     
@@ -451,8 +485,8 @@ async def deezer(client: Client, message_: Message):
          [   
              [
                InlineKeyboardButton('⏹', callback_data='leave'),
-               InlineKeyboardButton('⏸', callback_data= 'pause'),
-               InlineKeyboardButton('▶️', callback_data= 'play'),
+               InlineKeyboardButton('⏸', callback_data= 'puse'),
+               InlineKeyboardButton('▶️', callback_data= 'resume'),
                InlineKeyboardButton('⏭', callback_data='skip')
 
              ],                     
@@ -531,8 +565,8 @@ async def jiosaavn(client: Client, message_: Message):
          [   
              [
                InlineKeyboardButton('⏹', callback_data='leave'),
-               InlineKeyboardButton('⏸', callback_data= 'pause'),
-               InlineKeyboardButton('▶️', callback_data= 'play'),
+               InlineKeyboardButton('⏸', callback_data= 'puse'),
+               InlineKeyboardButton('▶️', callback_data= 'resume'),
                InlineKeyboardButton('⏭', callback_data='skip')
 
              ],                     
