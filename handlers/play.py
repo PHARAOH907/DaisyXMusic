@@ -204,14 +204,15 @@ async def m_cb(b, cb):
     global que
     user_id = cb.from_user.id
     chat_id = cb.message.chat.id
-    #chat_member = b.get_chat_member(chat_id, user_id)
-    if (not b.get_chat_member(chat_id, user_id).status == "administrator"):    
+    chat_member = b.get_chat_member(chat_id, user_id)
+    if not (chat_member.can_edit_messages or chat_member.can_promote_members or chat_member.can_change_info or chat_member.can_pin_messages):
         b.answer_callback_query(
              cb.id,
              text="You cant do this babe, Contact admin",
              show_alert=True,
          )   
         return
+    
     qeue = que.get(cb.message.chat.id)
     type_ = cb.matches[0].group(1)
     chat_id = cb.message.chat.id
