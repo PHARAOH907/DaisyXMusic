@@ -2,7 +2,7 @@ from os import path
 from typing import Dict
 from pyrogram import Client
 from pyrogram.types import Message, Voice
-
+from typing import Callable, Coroutine, Dict, List, Tuple, Union
 from callsmusic import callsmusic, queues
 
 from helpers.admins import get_administrators
@@ -204,8 +204,8 @@ async def m_cb(b, cb):
     global que
     user_id = cb.from_user.id
     chat_id = cb.message.chat.id
-    chat_member = b.get_chat_member(chat_id, user_id)
-    if not (chat_member.can_edit_messages or chat_member.can_promote_members or chat_member.can_change_info or chat_member.can_pin_messages):
+    chat_member = await b.get_chat_members(chat_id, filter="administrators")
+    if not user_id in chat_member:
         b.answer_callback_query(
              cb.id,
              text="You cant do this babe, Contact admin",
