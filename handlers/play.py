@@ -106,7 +106,7 @@ async def generate_cover(requested_by, title, views, duration, thumbnail):
 
 
  
-@Client.on_message(filters.command('playlist', '^'))
+@Client.on_message(filters.command('playlist'))
 async def playlist(client, message):
     global que
     queue = que.get(message.chat.id)
@@ -166,6 +166,7 @@ def r_ply(type_):
     return mar
 
 @Client.on_message(filters.command('current'))
+@errors
 async def settings(client, message):
     playing = None
     if message.chat.id in callsmusic.pytgcalls.active_calls:
@@ -254,7 +255,7 @@ async def play(_, message: Message):
     sender_name = message.from_user.first_name
     audio = (message.reply_to_message.audio or message.reply_to_message.voice) if message.reply_to_message else None
     url = get_url(message)
-    qeue = que.get(message.chat.id)
+    
     if audio:
         if round(audio.duration / 60) > DURATION_LIMIT:
             raise DurationLimitError(
@@ -331,6 +332,7 @@ async def play(_, message: Message):
   
     if message.chat.id in callsmusic.pytgcalls.active_calls:
         position = await queues.put(message.chat.id, file=file_path)
+        qeue = que.get(message.chat.id)
         s_name = title
         r_by = requested_by
         loc = file_path
@@ -343,6 +345,9 @@ async def play(_, message: Message):
         os.remove("final.png")
         return await lel.delete()
     else:
+        chat_id = message.chat.id
+        que[chat_id] = []
+        qeue = que.get(message.chat.id)
         s_name = title            
         r_by = requested_by
         loc = file_path
