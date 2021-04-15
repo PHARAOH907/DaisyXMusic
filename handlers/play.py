@@ -134,7 +134,8 @@ async def playlist(client, message):
 # ============================= Settings =========================================
 
 def updated_stats(chat, queue, vol=100):
-    if chat.id in active_chats:
+    if chat.id in callsmusic.pytgcalls.active_calls:
+    #if chat.id in active_chats:
         stats = 'Settings of **{}**'.format(chat.title)
         if len(que) > 0:
             stats += '\n\n'
@@ -154,8 +155,10 @@ def r_ply(type_):
     mar = InlineKeyboardMarkup(
         [
             [
+                InlineKeyboardButton('⏹', 'leave'),
                 InlineKeyboardButton(ico, type_),
-                InlineKeyboardButton('Skip', 'skip')
+                InlineKeyboardButton('⏭', 'skip')
+                
             ]
 
         ]
@@ -236,8 +239,8 @@ async def m_cb(b, cb):
                 await cb.message.reply_text(f'- Skipped track\n- Now Playing **{qeue[0][0]}**')
 
     else:
-        group_call = get_instance(chat_id)
-        if group_call.is_connected:
+        
+        if chat_id in callsmusic.pytgcalls.active_calls:
             await cb.message.edit('Successfully Left the Chat!')
         else:
             await cb.answer('Chat is not connected!', show_alert=True)
@@ -245,7 +248,7 @@ async def m_cb(b, cb):
 @Client.on_message(command("play") & other_filters)
 @errors
 async def play(_, message: Message):
-
+    global que
     lel = await message.reply("🔄 **Processing**")
     sender_id = message.from_user.id
     sender_name = message.from_user.first_name
