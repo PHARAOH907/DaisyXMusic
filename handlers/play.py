@@ -23,7 +23,7 @@ from downloaders import youtube
 
 from config import BOT_NAME as bn, DURATION_LIMIT
 from helpers.filters import command, other_filters
-from helpers.decorators import errors
+from helpers.decorators import errors, authorized_users_only
 from helpers.errors import DurationLimitError
 from helpers.gets import get_url, get_file_name
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -36,7 +36,11 @@ from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 from config import que
+from Python_ARQ import ARQ
+import json
+import wget
 
+chat_id = None
 
            
                                           
@@ -106,7 +110,12 @@ async def generate_cover(requested_by, title, views, duration, thumbnail):
 
 
  
-@Client.on_message(filters.command('playlist'))
+
+@Client.on_message(
+    filters.command("playlist")
+    & filters.group
+    & ~ filters.edited
+)
 async def playlist(client, message):
     global que
     queue = que.get(message.chat.id)
@@ -165,7 +174,11 @@ def r_ply(type_):
     )
     return mar
 
-@Client.on_message(filters.command('current'))
+@Client.on_message(
+    filters.command("current")
+    & filters.group
+    & ~ filters.edited
+)
 @errors
 async def settings(client, message):
     playing = None
@@ -182,7 +195,8 @@ async def settings(client, message):
     else:
         await message.reply('No VC instances running in this chat')
 
-@Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave)$'))
+@Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave|puse|resume)$'))
+@authorized_users_only
 async def m_cb(b, cb):
     global que
     qeue = que.get(cb.message.chat.id)
@@ -217,7 +231,30 @@ async def m_cb(b, cb):
             callsmusic.pytgcalls.resume_stream(chat_id)
             await cb.answer('Music Resumed!')
             await cb.message.edit(updated_stats(m_chat, qeue), reply_markup=r_ply('pause'))
-            
+                      
+    elif type_ == 'resume':
+        
+        if (
+            chat_id not in callsmusic.pytgcalls.active_calls
+            ) or (
+                callsmusic.pytgcalls.active_calls[chat_id] == 'playing'
+            ):
+                await cb.answer('Chat is not connected!', show_alert=True)
+        else:
+            callsmusic.pytgcalls.resume_stream(chat_id)
+            await cb.answer('Music Resumed!')     
+    elif type_ == 'puse':
+        
+        if (
+            chat_id not in callsmusic.pytgcalls.active_calls
+            ) or (
+                callsmusic.pytgcalls.active_calls[chat_id] == 'playing'
+            ):
+                await cb.answer('Chat is not connected!', show_alert=True)
+        else:
+            callsmusic.pytgcalls.resume_stream(chat_id)
+            await cb.answer('Music Resumed!')     
+           
     elif type_ == 'skip':
         if qeue:
             skip = qeue.pop(0)
@@ -242,6 +279,12 @@ async def m_cb(b, cb):
     else:
         
         if chat_id in callsmusic.pytgcalls.active_calls:
+            try:
+                callsmusic.queues.clear(chat_id)
+            except QueueEmpty:
+                pass
+
+            callsmusic.pytgcalls.leave_group_call(chat_id)
             await cb.message.edit('Successfully Left the Chat!')
         else:
             await cb.answer('Chat is not connected!', show_alert=True)
@@ -265,8 +308,8 @@ async def play(_, message: Message):
                 [
                     [
                       InlineKeyboardButton('⏹', callback_data='leave'),
-                      InlineKeyboardButton('⏸', callback_data= 'pause'),
-                      InlineKeyboardButton('▶️', callback_data= 'play'),
+                      InlineKeyboardButton('⏸', callback_data= 'puse'),
+                      InlineKeyboardButton('▶️', callback_data= 'resume'),
                       InlineKeyboardButton('⏭', callback_data='skip')
                 
                     ],
@@ -377,3 +420,160 @@ async def play(_, message: Message):
     )
         os.remove("final.png")
         return await lel.delete()
+
+
+@Client.on_message(
+    filters.command("dplay")
+    & filters.group
+    & ~ filters.edited
+)
+async def deezer(client: Client, message_: Message):
+    global que
+    requested_by = message_.from_user.first_name
+    text = message_.text.split(" ", 1)
+    queryy = text[1]
+    res = await message_.reply_text(f"Searching 👀👀👀 for `{queryy}` on deezer")
+    try:
+        arq = ARQ("https://thearq.tech")
+        r = await arq.deezer(query=queryy, limit=1)
+        title = r[0]["title"]
+        duration = int(r[0]["duration"])
+        thumbnail = r[0]["thumbnail"]
+        artist = r[0]["artist"]
+        url = r[0]["url"]
+    except:
+        await res.edit(
+            "Found Literally Nothing, You Should Work On Your English!"
+        )
+        is_playing = False
+        return
+    keyboard = InlineKeyboardMarkup(
+         [   
+             [
+               InlineKeyboardButton('⏹', callback_data='leave'),
+               InlineKeyboardButton('⏸', callback_data= 'pause'),
+               InlineKeyboardButton('▶️', callback_data= 'play'),
+               InlineKeyboardButton('⏭', callback_data='skip')
+
+             ],                     
+             [
+                 InlineKeyboardButton(
+                     text="Listen On Deezer 🎬",
+                     url=f"{url}")
+
+             ]
+         ]
+     )
+    file_path= await converter.convert(wget.download(url))
+    await res.edit("Generating Thumbnail")
+    await generate_cover(requested_by, title, artist, duration, thumbnail)
+    if message_.chat.id in callsmusic.pytgcalls.active_calls:
+        await res.edit("adding in queue")
+        position = await queues.put(message_.chat.id, file=file_path)
+        qeue = que.get(message_.chat.id)
+        s_name = title
+        r_by = message_.from_user
+        loc = file_path
+        appendable = [s_name, r_by, loc]
+        qeue.append(appendable)
+        await res.edit_text(f"✯DaisyXmusic✯= #️⃣ Queued at position {position}.")
+    else:
+        await res.edit_text("✯DaisyXmusic✯=▶️ Playing.....")
+        chat_id = message_.chat.id
+        que[chat_id] = []
+        qeue = que.get(message_.chat.id)
+        s_name = title
+        r_by = message_.from_user
+        loc = file_path
+        appendable = [s_name, r_by, loc]
+        qeue.append(appendable)
+        callsmusic.pytgcalls.join_group_call(message_.chat.id, file_path)
+    await res.delete()
+    m = await client.send_photo(
+        chat_id=message_.chat.id,
+        reply_markup=keyboard,
+        photo="final.png",
+        caption=f"Playing [{title}]({url}) Via [Deezer](https://t.me/DaisyXupdates)."
+    ) 
+    os.remove("final.png")
+
+
+@Client.on_message(
+    filters.command("splay")
+    & filters.group
+    & ~ filters.edited
+)
+async def jiosaavn(client: Client, message_: Message):
+    requested_by = message_.from_user.first_name
+    chat_id=message_.chat.id
+    text = message_.text.split(" ", 1)
+    query = text[1]
+    res = await message_.reply_text(f"Searching 👀👀👀 for `{query}` on jio saavn")
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"https://jiosaavnapi.bhadoo.uk/result/?query={query}"
+            ) as resp:
+                r = json.loads(await resp.text())
+        sname = r[0]["song"]
+        slink = r[0]["media_url"]
+        ssingers = r[0]["singers"]
+        sthumb = r[0]["image"]
+        sduration = int(r[0]["duration"])
+    except Exception as e:
+        await res.edit(
+            "Found Literally Nothing!, You Should Work On Your English."
+        )
+        print(str(e))
+        is_playing = False
+        return
+    keyboard = InlineKeyboardMarkup(
+         [   
+             [
+               InlineKeyboardButton('⏹', callback_data='leave'),
+               InlineKeyboardButton('⏸', callback_data= 'pause'),
+               InlineKeyboardButton('▶️', callback_data= 'play'),
+               InlineKeyboardButton('⏭', callback_data='skip')
+
+             ],                     
+             [
+                 InlineKeyboardButton(
+                     text="Join Updates Channel",
+                     url=f"https://t.me/daisyxupdates")
+
+             ]
+         ]
+     )
+    file_path= await converter.convert(wget.download(slink))
+    if message_.chat.id in callsmusic.pytgcalls.active_calls:
+        position = await queues.put(message_.chat.id, file=file_path)
+        qeue = que.get(message_.chat.id)
+        s_name = title
+        r_by = message_.from_user
+        loc = file_path
+        appendable = [s_name, r_by, loc]
+        qeue.append(appendable)
+        await res.edit_text(f"✯DaisyXmusic✯=#️⃣ Queued at position {position}.")
+    else:
+        await res.edit_text("✯DaisyXmusic✯=▶️ Playing.....")
+        chat_id = message_.chat.id
+        que[chat_id] = []
+        qeue = que.get(message_.chat.id)
+        s_name = title
+        r_by = message_.from_user
+        loc = file_path
+        appendable = [s_name, r_by, loc]
+        qeue.append(appendable)
+        callsmusic.pytgcalls.join_group_call(message_.chat.id, file_path)
+    await res.edit("Generating Thumbnail.")
+    await generate_cover(requested_by, sname, ssingers, sduration, sthumb)
+    await res.delete()
+    m = await client.send_photo(
+        reply_markup=keyboard,
+        chat_id=message_.chat.id,
+        caption=f"Playing {sname} Via [Jiosaavn](https://t.me/Daisyxupdates)",
+        photo="final.png",
+    )
+    os.remove("final.png")
+
+# Have u read all. If read RESPECT :-)
