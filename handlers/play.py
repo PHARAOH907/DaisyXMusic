@@ -264,6 +264,13 @@ async def play(_, message: Message):
         keyboard = InlineKeyboardMarkup(
                 [
                     [
+                      InlineKeyboardButton('⏹', callback_data='leave'),
+                      InlineKeyboardButton('⏸', callback_data= 'pause'),
+                      InlineKeyboardButton('▶️', callback_data= 'play'),
+                      InlineKeyboardButton('⏭', callback_data='skip')
+                
+                    ],
+                    [
                         InlineKeyboardButton(
                             text="Join Updates Channel ",
                             url=f"https://t.me/daisyxupdates")
@@ -317,7 +324,14 @@ async def play(_, message: Message):
             return
 
         keyboard = InlineKeyboardMarkup(
-                [
+                [   
+                    [
+                      InlineKeyboardButton('⏹', callback_data='leave'),
+                      InlineKeyboardButton('⏸', callback_data= 'pause'),
+                      InlineKeyboardButton('▶️', callback_data= 'play'),
+                      InlineKeyboardButton('⏭', callback_data='skip')
+                
+                    ],                     
                     [
                         InlineKeyboardButton(
                             text="Watch On YouTube 🎬",
@@ -334,7 +348,7 @@ async def play(_, message: Message):
         position = await queues.put(message.chat.id, file=file_path)
         qeue = que.get(message.chat.id)
         s_name = title
-        r_by = requested_by
+        r_by = message.from_user
         loc = file_path
         appendable = [s_name, r_by, loc]
         qeue.append(appendable)
@@ -349,7 +363,7 @@ async def play(_, message: Message):
         que[chat_id] = []
         qeue = que.get(message.chat.id)
         s_name = title            
-        r_by = requested_by
+        r_by = message.from_user
         loc = file_path
         appendable = [s_name, r_by, loc]      
         qeue.append(appendable)
