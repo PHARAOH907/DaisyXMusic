@@ -248,7 +248,19 @@ async def m_cb(b, cb):
             callsmusic.pytgcalls.resume_stream(chat_id)
             await cb.answer('Music Resumed!')
             await cb.message.edit(updated_stats(m_chat, qeue), reply_markup=r_ply('pause'))
+                     
 
+    elif type_ == 'download':
+        if (
+            chat_id not in callsmusic.pytgcalls.active_calls
+            ) or (
+                callsmusic.pytgcalls.active_calls[chat_id] == 'playing'
+            ):
+                await cb.answer('Time is out honey!', show_alert=True)
+        else:
+            callsmusic.pytgcalls.resume_stream(chat_id)
+            await cb.answer('Music Download started!')
+            await cb.message.edit(updated_stats(m_chat, qeue), reply_markup=r_ply('pause'))
     elif type_ == 'playlist':
         queue = que.get(cb.message.chat.id)
         if not queue:
@@ -314,7 +326,7 @@ async def m_cb(b, cb):
                     callsmusic.queues.get(chat_id)["file"]
                 )
                 await cb.answer()
-                await cb.message.edit(updated_stats(m_chat, qeue), reply_markup=r_ply(the_data))
+                await cb.message.edit(updated_stats(m_chat, queue), reply_markup=r_ply(the_data))
                 await cb.message.reply_text(f'- Skipped track\n- Now Playing **{qeue[0][0]}**')
 
     else:
@@ -332,6 +344,7 @@ async def m_cb(b, cb):
 @Client.on_message(command("play") & other_filters)
 async def play(_, message: Message):
     global que
+    global lol
     lel = await message.reply("🔄 **Processing**")
     sender_id = message.from_user.id
     sender_name = message.from_user.first_name
@@ -346,8 +359,7 @@ async def play(_, message: Message):
         keyboard = InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
-                        InlineKeyboardButton('Next ⏭', callback_data='skip')
+                        InlineKeyboardButton('Playlist 📖 ', callback_data='playlist')
 
                     ],
                     [
@@ -407,8 +419,7 @@ async def play(_, message: Message):
                 [   
                     [
                                
-                        InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
-                        InlineKeyboardButton('Next ⏭', callback_data='skip')
+                        InlineKeyboardButton('Playlist 📖', callback_data='playlist')
                 
                     ],                     
                     [
@@ -486,8 +497,7 @@ async def deezer(client: Client, message_: Message):
     keyboard = InlineKeyboardMarkup(
          [   
              [
-                 InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
-                 InlineKeyboardButton('Next ⏭', callback_data='skip')           
+                 InlineKeyboardButton('Playlist 📖', callback_data='playlist')         
              ],                     
              [
                  InlineKeyboardButton(
@@ -563,8 +573,7 @@ async def jiosaavn(client: Client, message_: Message):
     keyboard = InlineKeyboardMarkup(
          [   
              [
-               InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
-               InlineKeyboardButton('Next ⏭', callback_data='skip')
+               InlineKeyboardButton('Playlist 📖', callback_data='playlist')
              ],                     
              [
                InlineKeyboardButton(
