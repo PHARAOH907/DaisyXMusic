@@ -84,11 +84,11 @@ async def skip(_, message: Message):
             )
                 
 
-    queue = que.get(message.chat.id)
-    if queue:
-        skip = queue.pop(0)
-    if not queue:
+    qeue = que.get(message.chat.id)
+    if qeue:
+        skip = qeue.pop(0)
+    if not qeue:
         return
-    await message.reply_text(f'- Skipped **{skip[0]}**\n- Now Playing **{queue[0][0]}**')
+    await message.reply_text(f'- Skipped **{skip[0]}**\n- Now Playing **{qeue[0][0]}**')
 
 
