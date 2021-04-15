@@ -236,16 +236,16 @@ async def m_cb(b, cb):
             await cb.message.edit(updated_stats(m_chat, qeue), reply_markup=r_ply('pause'))
 
     elif type_ == 'playlist':
-        queue = que.get(message.chat.id)
+        queue = que.get(cb.message.chat.id)
         if not queue:
             
-            await message.reply_text('Player is idle')
+            await cb.message.edit('Player is idle')
         temp = []
         for t in queue:
             temp.append(t)
         now_playing = temp[0][0]
         by = temp[0][1].mention(style='md')
-        msg = "**Now Playing** in {}".format(message.chat.title)
+        msg = "**Now Playing** in {}".format(cb.message.chat.title)
         msg += "\n- "+ now_playing
         msg += "\n- Req by "+by
         temp.pop(0)
@@ -265,20 +265,22 @@ async def m_cb(b, cb):
             ) or (
                 callsmusic.pytgcalls.active_calls[chat_id] == 'playing'
             ):
-                await cb.answer('Chat is not connected!', show_alert=True)
+                await cb.answer('Chat is not connected or already playng', show_alert=True)
         else:
             callsmusic.pytgcalls.resume_stream(chat_id)
             await cb.answer('Music Resumed!')     
     elif type_ == 'puse':
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
-            ) or (
-                callsmusic.pytgcalls.active_calls[chat_id] == 'playing'
-            ):
-                await cb.answer('Chat is not connected!', show_alert=True)
+                ) or (
+                    callsmusic.pytgcalls.active_calls[chat_id] == 'paused'
+                ):
+            await cb.answer('Chat is not connected or already paused', show_alert=True)
         else:
-            callsmusic.pytgcalls.resume_stream(chat_id)
-            await cb.answer('Music Resumed!')     
+            callsmusic.pytgcalls.pause_stream(chat_id)
+            
+            await cb.answer('Music Paused!')
+
            
     elif type_ == 'skip':
         if qeue:
