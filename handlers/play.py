@@ -184,10 +184,7 @@ def r_ply(type_):
     & filters.group
     & ~ filters.edited
 )
-async def settings(client, message):
-    playing = None
-    if message.chat.id in callsmusic.pytgcalls.active_calls:
-        playing = True
+async def ee(client, message):
     queue = que.get(message.chat.id)
     stats = updated_stats(message.chat, queue)
     if stats:
@@ -220,18 +217,7 @@ async def settings(client, message):
 
 @Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave|puse|resume|playlist)$'))
 async def m_cb(b, cb):
-    global que
-    user_id = cb.from_user.id
-    chat_id = cb.message.chat.id
-    chat_member = await b.get_chat_members(chat_id, filter="administrators")
-    if not user_id in chat_member:
-        b.answer_callback_query(
-             cb.id,
-             text="You cant do this babe, Contact admin",
-             show_alert=True,
-         )   
-        return
-    
+    global que    
     qeue = que.get(cb.message.chat.id)
     type_ = cb.matches[0].group(1)
     chat_id = cb.message.chat.id
