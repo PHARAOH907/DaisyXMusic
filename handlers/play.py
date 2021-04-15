@@ -109,26 +109,6 @@ async def generate_cover(requested_by, title, views, duration, thumbnail):
     os.remove("temp.png")
     os.remove("background.png")
 
-async def member_permissions(chat_id, user_id):
-    perms = []
-    member = await Client.get_chat_member(chat_id, user_id)
-    if member.can_post_messages:
-        perms.append("can_post_messages")
-    if member.can_edit_messages:
-        perms.append("can_edit_messages")
-    if member.can_delete_messages:
-        perms.append("can_delete_messages")
-    if member.can_restrict_members:
-        perms.append("can_restrict_members")
-    if member.can_promote_members:
-        perms.append("can_promote_members")
-    if member.can_change_info:
-        perms.append("can_change_info")
-    if member.can_invite_users:
-        perms.append("can_invite_users")
-    if member.can_pin_messages:
-        perms.append("can_pin_messages")
-    return perms
 
  
 
@@ -225,12 +205,12 @@ async def settings(client, message):
 async def m_cb(b, cb):
     global que
 
-    if len(await member_permissions(cb.message.chat.id, cb.from_user.id)) < 1:
-          if cb.from_user.id == inuka:
-            wew=True
-          else:
-            return
-    print('awesome')
+    administrators = await get_administrators(cb.message.chat)
+
+    for administrator in administrators:
+      if not administrator == cb.from_user.id:
+          return
+    print('lol')
     qeue = que.get(cb.message.chat.id)
     type_ = cb.matches[0].group(1)
     chat_id = cb.message.chat.id
