@@ -82,7 +82,7 @@ async def skip(_, message: Message):
                 message.chat.id,
                 callsmusic.queues.get(message.chat.id)["file"]
             )
-                queue = que.get(message.chat.id)
+                
 
     queue = que.get(message.chat.id)
     if queue:
