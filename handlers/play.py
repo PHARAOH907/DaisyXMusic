@@ -204,21 +204,12 @@ async def settings(client, message):
 @Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave|puse|resume|playlist)$'))
 async def m_cb(b, cb):
     global que
-
-    administrators = await get_administrators(cb.message.chat)
-
-    for administrator in administrators:
-      if not administrator == cb.from_user.id:
-          return
-    print('lol')
     qeue = que.get(cb.message.chat.id)
     type_ = cb.matches[0].group(1)
     chat_id = cb.message.chat.id
     m_chat = cb.message.chat
     the_data = cb.message.reply_markup.inline_keyboard[1][0].callback_data
     if type_ == 'pause':
-        if wew == True:
-           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
                 ) or (
@@ -233,8 +224,6 @@ async def m_cb(b, cb):
                 
 
     elif type_ == 'play':
-        if wew == True:
-           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
             ) or (
@@ -271,8 +260,6 @@ async def m_cb(b, cb):
         await cb.message.edit(msg)      
                       
     elif type_ == 'resume':
-        if wew == True:
-           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
             ) or (
@@ -283,8 +270,6 @@ async def m_cb(b, cb):
             callsmusic.pytgcalls.resume_stream(chat_id)
             await cb.answer('Music Resumed!')     
     elif type_ == 'puse':
-        if wew == True:
-           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
             ) or (
@@ -317,8 +302,6 @@ async def m_cb(b, cb):
                 await cb.message.reply_text(f'- Skipped track\n- Now Playing **{qeue[0][0]}**')
 
     else:
-        if wew == True:
-           return
         if chat_id in callsmusic.pytgcalls.active_calls:
             try:
                 callsmusic.queues.clear(chat_id)
@@ -334,9 +317,6 @@ async def m_cb(b, cb):
 @errors
 async def play(_, message: Message):
     global que
-    global inuka
-    inuka = message.from_user.id
-    
     lel = await message.reply("🔄 **Processing**")
     sender_id = message.from_user.id
     sender_name = message.from_user.first_name
@@ -602,7 +582,7 @@ async def jiosaavn(client: Client, message_: Message):
         chat_id = message_.chat.id
         que[chat_id] = []
         qeue = que.get(message_.chat.id)
-        s_name = title
+        s_name = sname
         r_by = message_.from_user
         loc = file_path
         appendable = [s_name, r_by, loc]
