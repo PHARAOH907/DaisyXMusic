@@ -77,6 +77,7 @@ async def stop(_, message: Message):
 @errors
 @authorized_users_only
 async def skip(_, message: Message):
+    global que
     if message.chat.id not in callsmusic.pytgcalls.active_calls:
         await message.reply_text("❗ Nothing is playing to skip!")
     else:
@@ -89,5 +90,13 @@ async def skip(_, message: Message):
                 message.chat.id,
                 callsmusic.queues.get(message.chat.id)["file"]
             )
+                queue = que.get(message.chat.id)
 
-        await skip(message)
+    queue = que.get(message.chat.id)
+    if queue:
+        skip = queue.pop(0)
+    if not queue:
+        return
+    await message.reply_text(f'- Skipped **{skip[0]}**\n- Now Playing **{queue[0][0]}**')
+
+
