@@ -191,6 +191,23 @@ async def settings(client, message):
     queue = que.get(message.chat.id)
     stats = updated_stats(message.chat, queue)
     if stats:
+        await message.reply(stats)              
+    else:
+        await message.reply('No VC instances running in this chat')
+
+@Client.on_message(
+    filters.command("player")
+    & filters.group
+    & ~ filters.edited
+)
+@authorized_users_only
+async def settings(client, message):
+    playing = None
+    if message.chat.id in callsmusic.pytgcalls.active_calls:
+        playing = True
+    queue = que.get(message.chat.id)
+    stats = updated_stats(message.chat, queue)
+    if stats:
         if playing:
             await message.reply(stats, reply_markup=r_ply('pause'))
             
@@ -198,6 +215,8 @@ async def settings(client, message):
             await message.reply(stats, reply_markup=r_ply('play'))
     else:
         await message.reply('No VC instances running in this chat')
+
+
 
 @Client.on_callback_query(filters.regex(pattern=r'^(play|pause|skip|leave|puse|resume|playlist)$'))
 async def m_cb(b, cb):
@@ -341,11 +360,9 @@ async def play(_, message: Message):
         keyboard = InlineKeyboardMarkup(
                 [
                     [
-                      InlineKeyboardButton('⏹', callback_data='leave'),
-                      InlineKeyboardButton('⏸', callback_data= 'puse'),
-                      InlineKeyboardButton('▶️', callback_data= 'resume'),
-                      InlineKeyboardButton('⏭', callback_data='skip')
-                
+                        InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
+                        InlineKeyboardButton('Next ⏭', callback_data='skip')
+
                     ],
                     [
                         InlineKeyboardButton(
@@ -403,10 +420,9 @@ async def play(_, message: Message):
         keyboard = InlineKeyboardMarkup(
                 [   
                     [
-                      InlineKeyboardButton('⏹', callback_data='leave'),
-                      InlineKeyboardButton('⏸', callback_data= 'puse'),
-                      InlineKeyboardButton('▶️', callback_data= 'resume'),
-                      InlineKeyboardButton('⏭', callback_data='skip')
+                               
+                        InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
+                        InlineKeyboardButton('Next ⏭', callback_data='skip')
                 
                     ],                     
                     [
@@ -484,11 +500,8 @@ async def deezer(client: Client, message_: Message):
     keyboard = InlineKeyboardMarkup(
          [   
              [
-               InlineKeyboardButton('⏹', callback_data='leave'),
-               InlineKeyboardButton('⏸', callback_data= 'puse'),
-               InlineKeyboardButton('▶️', callback_data= 'resume'),
-               InlineKeyboardButton('⏭', callback_data='skip')
-
+                 InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
+                 InlineKeyboardButton('Next ⏭', callback_data='skip')           
              ],                     
              [
                  InlineKeyboardButton(
@@ -510,7 +523,7 @@ async def deezer(client: Client, message_: Message):
         loc = file_path
         appendable = [s_name, r_by, loc]
         qeue.append(appendable)
-        await res.edit_text(f"✯DaisyXmusic✯= #️⃣ Queued at position {position}.")
+        await res.edit_text(f"Playing [{title}]({url}) Via [Deezer](https://t.me/DaisyXupdates")
     else:
         await res.edit_text("✯DaisyXmusic✯=▶️ Playing.....")
         chat_id = message_.chat.id
@@ -527,7 +540,7 @@ async def deezer(client: Client, message_: Message):
         chat_id=message_.chat.id,
         reply_markup=keyboard,
         photo="final.png",
-        caption=f"Playing [{title}]({url}) Via [Deezer](https://t.me/DaisyXupdates)."
+        caption=f"✯DaisyXmusic✯= #️⃣ Queued at position {position}.)."
     ) 
     os.remove("final.png")
 
@@ -564,11 +577,8 @@ async def jiosaavn(client: Client, message_: Message):
     keyboard = InlineKeyboardMarkup(
          [   
              [
-               InlineKeyboardButton('⏹', callback_data='leave'),
-               InlineKeyboardButton('⏸', callback_data= 'puse'),
-               InlineKeyboardButton('▶️', callback_data= 'resume'),
-               InlineKeyboardButton('⏭', callback_data='skip')
-
+               InlineKeyboardButton('📖 Playlist ', callback_data='playlist'),
+               InlineKeyboardButton('Next ⏭', callback_data='skip')
              ],                     
              [
                InlineKeyboardButton(
@@ -586,7 +596,8 @@ async def jiosaavn(client: Client, message_: Message):
         loc = file_path
         appendable = [s_name, r_by, loc]
         qeue.append(appendable)
-        await res.edit_text(f"✯DaisyXmusic✯=#️⃣ Queued at position {position}.")
+        await res.edit_text(f"Playing {sname} Via [Jiosaavn](https://t.me/Daisyxupdates)")
+           
     else:
         await res.edit_text("✯DaisyXmusic✯=▶️ Playing.....")
         chat_id = message_.chat.id
@@ -605,7 +616,7 @@ async def jiosaavn(client: Client, message_: Message):
         chat_id=message_.chat.id,
         reply_markup=keyboard,
         photo="final.png",
-        caption=f"Playing {sname} Via [Jiosaavn](https://t.me/Daisyxupdates)",
+        caption=f"✯DaisyXmusic✯=#️⃣ Queued at position {position}",
         
     )
     os.remove("final.png")
