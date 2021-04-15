@@ -16,14 +16,6 @@ from config import que
 
 
 
-async def skip(message):
-    global que
-    queue = que.get(message.chat.id)
-    if queue:
-        skip = queue.pop(0)
-    if not queue:
-        return
-    await message.reply_text(f'- Skipped **{skip[0]}**\n- Now Playing **{queue[0][0]}**')
 
 
 
