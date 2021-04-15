@@ -40,7 +40,7 @@ from config import que
 from Python_ARQ import ARQ
 import json
 import wget
-
+inuka = 00000000
 chat_id = None
 
            
@@ -225,8 +225,11 @@ async def settings(client, message):
 async def m_cb(b, cb):
     global que
 
-    if len(await member_permissions(cb.message.chat.id, cb.message.from_user.id)) < 1:
-        return
+    if len(await member_permissions(cb.message.chat.id, cb.from_user.id)) < 1:
+          if cb.from_user.id == inuka:
+            wew=True
+          else:
+            return
     print('awesome')
     qeue = que.get(cb.message.chat.id)
     type_ = cb.matches[0].group(1)
@@ -234,7 +237,8 @@ async def m_cb(b, cb):
     m_chat = cb.message.chat
     the_data = cb.message.reply_markup.inline_keyboard[1][0].callback_data
     if type_ == 'pause':
-        
+        if wew == True:
+           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
                 ) or (
@@ -249,7 +253,8 @@ async def m_cb(b, cb):
                 
 
     elif type_ == 'play':
-        
+        if wew == True:
+           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
             ) or (
@@ -286,7 +291,8 @@ async def m_cb(b, cb):
         await cb.message.edit(msg)      
                       
     elif type_ == 'resume':
-        
+        if wew == True:
+           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
             ) or (
@@ -297,7 +303,8 @@ async def m_cb(b, cb):
             callsmusic.pytgcalls.resume_stream(chat_id)
             await cb.answer('Music Resumed!')     
     elif type_ == 'puse':
-        
+        if wew == True:
+           return
         if (
             chat_id not in callsmusic.pytgcalls.active_calls
             ) or (
@@ -330,7 +337,8 @@ async def m_cb(b, cb):
                 await cb.message.reply_text(f'- Skipped track\n- Now Playing **{qeue[0][0]}**')
 
     else:
-        
+        if wew == True:
+           return
         if chat_id in callsmusic.pytgcalls.active_calls:
             try:
                 callsmusic.queues.clear(chat_id)
@@ -346,6 +354,9 @@ async def m_cb(b, cb):
 @errors
 async def play(_, message: Message):
     global que
+    global inuka
+    inuka = message.from_user.id
+    
     lel = await message.reply("🔄 **Processing**")
     sender_id = message.from_user.id
     sender_name = message.from_user.first_name
@@ -590,10 +601,9 @@ async def jiosaavn(client: Client, message_: Message):
 
              ],                     
              [
-                 InlineKeyboardButton(
-                     text="Join Updates Channel",
-                     url=f"https://t.me/daisyxupdates")
-
+               InlineKeyboardButton(
+                   text="Join Updates Channel",
+                   url='https://t.me/daisyxupdates')
              ]
          ]
      )
