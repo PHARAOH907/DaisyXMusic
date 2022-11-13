@@ -5,4 +5,4 @@
 
 
 
-[![Deploy to Cyclic](https://deploy.cyclic.app/button.svg)](https://deploy.cyclic.app/https://github.com/PHARAOH907/DaisyXMusic)
+[![Deploy to Cyclic](https://deploy.cyclic.app/button.svg)](https://deploy.cyclic.app=https://github.com/PHARAOH907/DaisyXMusic)
